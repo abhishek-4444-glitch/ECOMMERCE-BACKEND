@@ -1,6 +1,8 @@
 //create a transport for sending email
 //create a message
 //send email
+const dotenv=require('dotenv');
+dotenv.config();
 const nodemailer=require('nodemailer');
 async function sendTestEmail(email,username){
     try {

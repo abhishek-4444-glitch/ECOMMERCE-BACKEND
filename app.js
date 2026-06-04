@@ -1,4 +1,7 @@
 const express=require('express');
+const dotenv=require('dotenv');
+dotenv.config();
+const limiter=require('./middleware/ratelimit');
 const connectDB=require('./config/db');
 let users=require('./models/usermodel');
 const cors=require('cors');
@@ -6,9 +9,10 @@ const bcrypt=require('bcrypt');
 let products=require('./models/product.model');
 let gmail=require('./utills/gmail');
 const app=express();
-const PORT=3000;
+const PORT=process.env.port;
 app.use(express.json());
 app.use(cors());
+app.use(limiter);
 app.use(function(req,res,next){
   console.log("middleware executed");
   next();
@@ -88,6 +92,26 @@ try{
 } catch (error) {
   res.json({message:"Error registering user",error:error.message});
 }
+});
+
+app.post('/login',async(req,res)=>{
+  try{
+    const {username,password}=req.body;
+    if(!username || !password){
+      return res.json({message:"Username and password are required"});
+    }
+    let userdetails=await users.findOne({username});
+    if(!userdetails){
+      return res.json({message:"Invalid username or password"});
+    }
+    let checkpassword=await bcrypt.compare(password,userdetails.password);
+    if(!checkpassword){
+      return res.json({message:"Invalid username or password"});
+    }
+  }
+  catch(error){
+    res.json({message:"Error logging in",error:error.message});
+  }
 });
 
 
