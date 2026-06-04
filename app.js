@@ -2,7 +2,9 @@ const express=require('express');
 const connectDB=require('./config/db');
 let users=require('./models/usermodel');
 const cors=require('cors');
+const bcrypt=require('bcrypt');
 let products=require('./models/product.model');
+let gmail=require('./utills/gmail');
 const app=express();
 const PORT=3000;
 app.use(express.json());
@@ -55,13 +57,6 @@ app.delete('/products/:id',async(req,res)=>{
 
 
 
-
-
-
-
-
-
-
 app.post('/register',async(req,res)=>{
 try{
   const {username,password,email,role}=req.body;
@@ -72,15 +67,35 @@ try{
   if(fetchuser){
     return res.json({message:"Username already exists"});
   }
+  let checkemail=await users.findOne({email});
+  if(checkemail){
+    return res.json({message:"Email already exists"});
+  }
+
+   let hashedpassword=await bcrypt.hash(password,10);
+
   //store user in database
-  await users.create({username,password,email,role});
-  res.json({message:"User registered successfully"});
+  await users.create({username,password:hashedpassword,email,role});
+  
+  //send email
+  try {
+    await gmail.sendTestEmail(email,username);
+    res.json({message:"User registered successfully and confirmation email sent"});
+  } catch(emailError) {
+    console.error("Email sending failed:", emailError);
+    res.json({message:"User registered successfully but email could not be sent",error:emailError.message});
+  }
 } catch (error) {
   res.json({message:"Error registering user",error:error.message});
 }
 });
 
+
+
+
+
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);     
     connectDB();
 })
+//paxg enlf dwby omgd

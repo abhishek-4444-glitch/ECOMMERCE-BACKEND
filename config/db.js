@@ -1,7 +1,7 @@
 const mongoose=require('mongoose');
 async function connectDB(){
     try{
-        await mongoose.connect('mongodb://localhost:27017/siliconecommerce');
+        await mongoose.connect(process.env.db);
         console.log("Connected to MongoDB");
     }
     catch(error){
