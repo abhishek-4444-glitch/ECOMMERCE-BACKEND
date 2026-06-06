@@ -12,15 +12,11 @@ exports.createproduct=async(req,res)=>{
 exports.getproduct=async(req,res)=>{
   try{
      let maxlimit=req.query.limit
-     let shipment=req.query.location
     let allproducts=await products.find().limit(maxlimit);
-    if(shipment !== 'india') {
-    return res.json({
-        message: `imported from ${shipment}`
-    });
+    
+    res.json({allproducts});
 }
-    res.json({products:allproducts, address: shipment});
-  } catch (error) {
+   catch (error) {
     res.json({message:"Error fetching products",error:error.message});
   };
 };
